@@ -1,22 +1,20 @@
 import type { ReactNode } from 'react'
-import { Flex, Typography } from 'antd'
+import { Flex, Heading, Text } from '@chakra-ui/react'
 
-type Props = {
-  title: string
-  subtitle?: string
-  extra?: ReactNode
-}
+type Props = { title: string; description?: string; actions?: ReactNode }
 
-export function PageHeader({ title, subtitle, extra }: Props) {
+export function PageHeader({ title, description, actions }: Props) {
   return (
-    <Flex justify="space-between" align="center" wrap gap={12} style={{ marginBottom: 24 }}>
+    <Flex justify="space-between" align="center" wrap="wrap" gap="3" mb="6">
       <div>
-        <Typography.Title level={3} style={{ margin: 0 }}>
-          {title}
-        </Typography.Title>
-        {subtitle && <Typography.Text type="secondary">{subtitle}</Typography.Text>}
+        <Heading size="xl">{title}</Heading>
+        {description && (
+          <Text color="fg.muted" mt="1">
+            {description}
+          </Text>
+        )}
       </div>
-      {extra}
+      {actions}
     </Flex>
   )
 }

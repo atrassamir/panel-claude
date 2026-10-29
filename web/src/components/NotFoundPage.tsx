@@ -1,18 +1,22 @@
-import { Button, Result } from 'antd'
-import { useNavigate } from 'react-router-dom'
+import { Button, EmptyState, VStack } from '@chakra-ui/react'
+import { LuSearchX } from 'react-icons/lu'
+import { Link } from 'react-router-dom'
 
 export function NotFoundPage() {
-  const navigate = useNavigate()
   return (
-    <Result
-      status="404"
-      title="۴۰۴"
-      subTitle="صفحه‌ای که دنبالش هستید پیدا نشد."
-      extra={
-        <Button type="primary" onClick={() => navigate('/')}>
-          بازگشت به داشبورد
+    <EmptyState.Root>
+      <EmptyState.Content>
+        <EmptyState.Indicator>
+          <LuSearchX />
+        </EmptyState.Indicator>
+        <VStack textAlign="center">
+          <EmptyState.Title>صفحه پیدا نشد</EmptyState.Title>
+          <EmptyState.Description>صفحه‌ای که دنبالش هستید وجود ندارد.</EmptyState.Description>
+        </VStack>
+        <Button asChild>
+          <Link to="/">بازگشت به داشبورد</Link>
         </Button>
-      }
-    />
+      </EmptyState.Content>
+    </EmptyState.Root>
   )
 }

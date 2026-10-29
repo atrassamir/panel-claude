@@ -1,48 +1,79 @@
-import { Card, Col, Row, Statistic, Table, Tag } from 'antd'
-import { CheckCircleOutlined, CrownOutlined, TeamOutlined } from '@ant-design/icons'
+import { Badge, Card, Heading, SimpleGrid, Stat, Table } from '@chakra-ui/react'
+import { LuCircleDollarSign, LuClock, LuShoppingCart, LuUsers } from 'react-icons/lu'
 import { PageHeader } from '@/components/PageHeader'
-import { formatDate, formatNumber } from '@/lib/format'
-import { useUserStats } from '@/features/users/api'
-import { roleLabels, type User } from '@/features/users/types'
+import { orderStatusMeta, sampleOrders } from '@/data/orders'
+import { sampleUsers } from '@/data/users'
+import { useAuthStore } from '@/stores/auth'
+import { formatDate, formatNumber, formatPrice } from '@/lib/format'
 
 export function DashboardPage() {
-  const { data, isLoading } = useUserStats()
+  const user = useAuthStore((s) => s.user)
+  const revenue = sampleOrders.filter((o) => o.status !== 'cancelled').reduce((s, o) => s + o.amount, 0)
 
-  const cards = [
-    { title: 'کل کاربران', value: data?.total, icon: <TeamOutlined /> },
-    { title: 'کاربران فعال', value: data?.active, icon: <CheckCircleOutlined /> },
-    { title: 'مدیران', value: data?.admins, icon: <CrownOutlined /> },
+  const stats = [
+    { label: 'کاربران', value: formatNumber(sampleUsers.length), icon: <LuUsers /> },
+    { label: 'سفارش‌ها', value: formatNumber(sampleOrders.length), icon: <LuShoppingCart /> },
+    { label: 'درآمد', value: formatPrice(revenue), icon: <LuCircleDollarSign /> },
+    {
+      label: 'در حال پردازش',
+      value: formatNumber(sampleOrders.filter((o) => o.status === 'processing').length),
+      icon: <LuClock />,
+    },
   ]
 
   return (
     <>
-      <PageHeader title="داشبورد" subtitle="نمای کلی وضعیت سیستم" />
-      <Row gutter={[16, 16]}>
-        {cards.map((c) => (
-          <Col key={c.title} xs={24} sm={12} lg={8}>
-            <Card loading={isLoading}>
-              <Statistic title={c.title} value={c.value} prefix={c.icon} formatter={(v) => formatNumber(Number(v))} />
-            </Card>
-          </Col>
+      <PageHeader title="داشبورد" description={`خوش آمدید${user ? `، ${user.name}` : ''}`} />
+      <SimpleGrid columns={{ base: 1, sm: 2, xl: 4 }} gap="4" mb="6">
+        {stats.map((s) => (
+          <Card.Root key={s.label}>
+            <Card.Body>
+              <Stat.Root>
+                <Stat.Label>
+                  {s.icon} {s.label}
+                </Stat.Label>
+                <Stat.ValueText fontSize="xl">{s.value}</Stat.ValueText>
+              </Stat.Root>
+            </Card.Body>
+          </Card.Root>
         ))}
-        <Col span={24}>
-          <Card title="آخرین کاربران">
-            <Table<User>
-              rowKey="id"
-              loading={isLoading}
-              dataSource={data?.recent}
-              pagination={false}
-              scroll={{ x: true }}
-              columns={[
-                { title: 'نام', dataIndex: 'name' },
-                { title: 'ایمیل', dataIndex: 'email' },
-                { title: 'نقش', dataIndex: 'role', render: (r: User['role']) => <Tag>{roleLabels[r]}</Tag> },
-                { title: 'تاریخ عضویت', dataIndex: 'createdAt', render: formatDate },
-              ]}
-            />
-          </Card>
-        </Col>
-      </Row>
+      </SimpleGrid>
+
+      <Card.Root>
+        <Card.Header>
+          <Heading size="md">آخرین سفارش‌ها</Heading>
+        </Card.Header>
+        <Card.Body>
+          <Table.ScrollArea>
+            <Table.Root size="sm">
+              <Table.Header>
+                <Table.Row>
+                  <Table.ColumnHeader>کد</Table.ColumnHeader>
+                  <Table.ColumnHeader>مشتری</Table.ColumnHeader>
+                  <Table.ColumnHeader textAlign="end">مبلغ</Table.ColumnHeader>
+                  <Table.ColumnHeader>وضعیت</Table.ColumnHeader>
+                  <Table.ColumnHeader>تاریخ</Table.ColumnHeader>
+                </Table.Row>
+              </Table.Header>
+              <Table.Body>
+                {sampleOrders.slice(0, 6).map((o) => (
+                  <Table.Row key={o.id}>
+                    <Table.Cell fontFamily="mono" fontSize="xs">
+                      {o.code}
+                    </Table.Cell>
+                    <Table.Cell>{o.customer}</Table.Cell>
+                    <Table.Cell textAlign="end">{formatPrice(o.amount)}</Table.Cell>
+                    <Table.Cell>
+                      <Badge colorPalette={orderStatusMeta[o.status].color}>{orderStatusMeta[o.status].label}</Badge>
+                    </Table.Cell>
+                    <Table.Cell>{formatDate(o.date)}</Table.Cell>
+                  </Table.Row>
+                ))}
+              </Table.Body>
+            </Table.Root>
+          </Table.ScrollArea>
+        </Card.Body>
+      </Card.Root>
     </>
   )
 }

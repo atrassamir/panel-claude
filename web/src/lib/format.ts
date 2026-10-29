@@ -5,3 +5,5 @@ const numberFormatter = new Intl.NumberFormat('fa-IR')
 export const formatDate = (iso: string) => dateFormatter.format(new Date(iso))
 
 export const formatNumber = (n: number) => numberFormatter.format(n)
+
+export const formatPrice = (n: number) => `${numberFormatter.format(n)} تومان`

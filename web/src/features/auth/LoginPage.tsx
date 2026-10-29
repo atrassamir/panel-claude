@@ -1,59 +1,63 @@
-import { useState } from 'react'
-import { Navigate, useLocation, useNavigate } from 'react-router-dom'
-import { Alert, Button, Card, Flex, Form, Input, theme, Typography } from 'antd'
-import { LockOutlined, UserOutlined } from '@ant-design/icons'
-import { authMock } from '@/mocks/auth'
+import { Alert, Button, Input, Link as ChakraLink, Stack, Text } from '@chakra-ui/react'
+import { zodResolver } from '@hookform/resolvers/zod'
+import { useForm } from 'react-hook-form'
+import { Link, useLocation, useNavigate } from 'react-router-dom'
+import { FormField } from '@/components/FormField'
+import { PasswordInput } from '@/components/ui/password-input'
 import { useAuthStore } from '@/stores/auth'
-
-type LoginForm = { username: string; password: string }
+import { loginSchema, type LoginValues } from './schemas'
 
 export function LoginPage() {
   const navigate = useNavigate()
   const location = useLocation()
-  const { token, setSession } = useAuthStore()
-  const { token: themeToken } = theme.useToken()
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState<string | null>(null)
+  const login = useAuthStore((s) => s.login)
+  const {
+    register,
+    handleSubmit,
+    setError,
+    formState: { errors, isSubmitting },
+  } = useForm<LoginValues>({ resolver: zodResolver(loginSchema) })
 
-  const from = (location.state as { from?: string } | null)?.from ?? '/'
-  if (token) return <Navigate to={from} replace />
-
-  const onFinish = async ({ username, password }: LoginForm) => {
-    setLoading(true)
-    setError(null)
+  const onSubmit = ({ email, password }: LoginValues) => {
     try {
-      const res = await authMock.login(username, password)
-      setSession(res.token, res.user)
-      navigate(from, { replace: true })
+      login(email, password)
+      navigate((location.state as { from?: string } | null)?.from ?? '/', { replace: true })
     } catch (e) {
-      setError((e as Error).message)
-    } finally {
-      setLoading(false)
+      setError('root', { message: (e as Error).message })
     }
   }
 
   return (
-    <Flex align="center" justify="center" style={{ minHeight: '100vh', padding: 16, background: themeToken.colorBgLayout }}>
-      <Card style={{ width: '100%', maxWidth: 380 }}>
-        <Typography.Title level={3} style={{ textAlign: 'center' }}>
-          ورود به پنل مدیریت
-        </Typography.Title>
-        {error && <Alert type="error" title={error} showIcon style={{ marginBottom: 16 }} />}
-        <Form<LoginForm> layout="vertical" onFinish={onFinish} initialValues={{ username: 'admin' }}>
-          <Form.Item name="username" label="نام کاربری" rules={[{ required: true, message: 'نام کاربری را وارد کنید' }]}>
-            <Input prefix={<UserOutlined />} autoComplete="username" />
-          </Form.Item>
-          <Form.Item name="password" label="رمز عبور" rules={[{ required: true, message: 'رمز عبور را وارد کنید' }]}>
-            <Input.Password prefix={<LockOutlined />} autoComplete="current-password" />
-          </Form.Item>
-          <Button type="primary" htmlType="submit" block loading={loading}>
-            ورود
-          </Button>
-        </Form>
-        <Typography.Paragraph type="secondary" style={{ marginTop: 16, marginBottom: 0, textAlign: 'center' }}>
-          حساب آزمایشی: admin / admin123
-        </Typography.Paragraph>
-      </Card>
-    </Flex>
+    <form onSubmit={handleSubmit(onSubmit)} noValidate>
+      <Stack gap="4">
+        <Text fontSize="xl" fontWeight="bold">
+          ورود
+        </Text>
+        {errors.root && (
+          <Alert.Root status="error">
+            <Alert.Indicator />
+            <Alert.Title>{errors.root.message}</Alert.Title>
+          </Alert.Root>
+        )}
+        <FormField label="ایمیل" error={errors.email?.message}>
+          <Input type="email" dir="ltr" autoComplete="email" {...register('email')} />
+        </FormField>
+        <FormField label="رمز عبور" error={errors.password?.message}>
+          <PasswordInput autoComplete="current-password" {...register('password')} />
+        </FormField>
+        <Button type="submit" colorPalette="blue" loading={isSubmitting}>
+          ورود
+        </Button>
+        <Text fontSize="sm" textAlign="center">
+          حساب ندارید؟{' '}
+          <ChakraLink asChild colorPalette="blue" color="colorPalette.fg">
+            <Link to="/register">ثبت نام کنید</Link>
+          </ChakraLink>
+        </Text>
+        <Text fontSize="xs" color="fg.muted" textAlign="center">
+          حساب آزمایشی: admin@example.com / admin123
+        </Text>
+      </Stack>
+    </form>
   )
 }
