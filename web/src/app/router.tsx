@@ -1,4 +1,4 @@
-import { createBrowserRouter } from 'react-router-dom'
+import { createBrowserRouter, createHashRouter } from 'react-router-dom'
 import { AdminLayout } from '@/layouts/AdminLayout'
 import { AuthLayout } from '@/layouts/AuthLayout'
 import { LoginPage } from '@/features/auth/LoginPage'
@@ -7,7 +7,10 @@ import { NotFoundPage } from '@/components/NotFoundPage'
 import { GuestOnly, RequireAuth } from './guards'
 import { navItems } from './navigation'
 
-export const router = createBrowserRouter([
+// Static hosts without SPA fallback (e.g. a single-file preview) need hash URLs.
+const createRouter = import.meta.env.VITE_ROUTER === 'hash' ? createHashRouter : createBrowserRouter
+
+export const router = createRouter([
   {
     element: <GuestOnly />,
     children: [
