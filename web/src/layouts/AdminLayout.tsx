@@ -2,41 +2,35 @@ import { Suspense, useState } from 'react'
 import { Outlet } from 'react-router-dom'
 import { Box, CloseButton, Drawer, Flex, HStack, IconButton, Portal, Spinner } from '@chakra-ui/react'
 import { LuMenu, LuPanelRightClose, LuPanelRightOpen } from 'react-icons/lu'
-import { Logo } from '@/components/Logo'
 import { ColorModeButton } from '@/components/ui/color-mode'
 import { useUiStore } from '@/stores/ui'
 import { AppBreadcrumb } from './AppBreadcrumb'
 import { CommandPalette } from './CommandPalette'
-import { LayoutSwitcher } from './LayoutSwitcher'
 import { Notifications } from './Notifications'
 import { MiniSidebarNav, SidebarNav } from './Sidebar'
-import { TopNav } from './TopNav'
 import { UserMenu } from './UserMenu'
 
 export function AdminLayout() {
   const [drawerOpen, setDrawerOpen] = useState(false)
-  const { layout, sidebarCollapsed, toggleSidebar } = useUiStore()
-  const showSidebar = layout === 'sidebar'
+  const { sidebarCollapsed, toggleSidebar } = useUiStore()
 
   return (
     <Flex minH="100vh">
-      {showSidebar && (
-        <Box
-          as="aside"
-          w={sidebarCollapsed ? '16' : '64'}
-          transition="width 0.2s"
-          flexShrink={0}
-          borderInlineEndWidth="1px"
-          bg="bg.panel"
-          hideBelow="lg"
-          position="sticky"
-          top="0"
-          h="100vh"
-          overflowY="auto"
-        >
-          {sidebarCollapsed ? <MiniSidebarNav /> : <SidebarNav />}
-        </Box>
-      )}
+      <Box
+        as="aside"
+        w={sidebarCollapsed ? '16' : '64'}
+        transition="width 0.2s"
+        flexShrink={0}
+        borderInlineEndWidth="1px"
+        bg="bg.panel"
+        hideBelow="lg"
+        position="sticky"
+        top="0"
+        h="100vh"
+        overflowY="auto"
+      >
+        {sidebarCollapsed ? <MiniSidebarNav /> : <SidebarNav />}
+      </Box>
 
       <Drawer.Root open={drawerOpen} onOpenChange={(e) => setDrawerOpen(e.open)} placement="start">
         <Portal>
@@ -58,24 +52,17 @@ export function AdminLayout() {
             <IconButton variant="ghost" size="sm" aria-label="باز کردن منو" hideFrom="lg" onClick={() => setDrawerOpen(true)}>
               <LuMenu />
             </IconButton>
-            {showSidebar ? (
-              <IconButton
-                variant="ghost"
-                size="sm"
-                aria-label={sidebarCollapsed ? 'باز کردن سایدبار' : 'جمع کردن سایدبار'}
-                hideBelow="lg"
-                onClick={toggleSidebar}
-              >
-                {sidebarCollapsed ? <LuPanelRightOpen /> : <LuPanelRightClose />}
-              </IconButton>
-            ) : (
-              <Box hideBelow="lg">
-                <Logo />
-              </Box>
-            )}
+            <IconButton
+              variant="ghost"
+              size="sm"
+              aria-label={sidebarCollapsed ? 'باز کردن سایدبار' : 'جمع کردن سایدبار'}
+              hideBelow="lg"
+              onClick={toggleSidebar}
+            >
+              {sidebarCollapsed ? <LuPanelRightOpen /> : <LuPanelRightClose />}
+            </IconButton>
             <CommandPalette />
             <HStack gap="1" ms="auto">
-              <LayoutSwitcher />
               <ColorModeButton />
               <Notifications />
               <Box ms="2">
@@ -83,14 +70,9 @@ export function AdminLayout() {
               </Box>
             </HStack>
           </Flex>
-          {!showSidebar && (
-            <Box px="6" py="2" borderTopWidth="1px" hideBelow="lg">
-              <TopNav />
-            </Box>
-          )}
         </Box>
 
-        <Box as="main" flex="1" p={{ base: '4', md: '6' }} w="full" maxW={showSidebar ? undefined : '8xl'} mx="auto">
+        <Box as="main" flex="1" p={{ base: '4', md: '6' }}>
           <AppBreadcrumb />
           <Suspense
             fallback={
