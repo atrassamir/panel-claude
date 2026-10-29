@@ -1,4 +1,4 @@
-import { ButtonGroup, Flex, HStack, IconButton, NativeSelect, Pagination, Text } from '@chakra-ui/react'
+import { ButtonGroup, Flex, HStack, IconButton, NativeSelect, Pagination, Text, useBreakpointValue } from '@chakra-ui/react'
 import { LuChevronLeft, LuChevronRight } from 'react-icons/lu'
 import { formatNumber } from '@/lib/format'
 
@@ -19,6 +19,7 @@ export function TablePagination({
   onPageSizeChange,
   pageSizeOptions = [5, 10, 20, 50],
 }: Props) {
+  const siblingCount = useBreakpointValue({ base: 0, md: 1 }) ?? 1
   const from = total === 0 ? 0 : (page - 1) * pageSize + 1
   const to = Math.min(page * pageSize, total)
 
@@ -51,6 +52,7 @@ export function TablePagination({
         pageSize={pageSize}
         page={page}
         onPageChange={(e) => onPageChange(e.page)}
+        siblingCount={siblingCount}
         translations={{ itemLabel: ({ page }) => `صفحه ${formatNumber(page)}` }}
       >
         <ButtonGroup variant="ghost" size="sm">
